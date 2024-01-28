@@ -1,13 +1,27 @@
 ﻿@page "/identity/account/register"
+@using Client.Pages.ComponentsPage
+@using Syncfusion.Blazor.Popups;
+@inject SfDialogService DialogService
+@layout AuthenticationLayout
 
 <div class="container">
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
             <EditForm Enfance Model="User" OnValidSubmit="HandlerRegistration">
-                <DataAnnotationsValidator/>
-                <ValidationSummary/>
-                <div class="card">
-                    <div class="card-header">Fill this form to Register</div>
+                <DataAnnotationsValidator/>                
+                <div class="card bg-dark justify-content-center" 
+                        style="opacity:0.85; margin-top:50%; border-radius:10px; color:white; font-weight:bold;">
+                    <div class="card-header text-center fs-5">Register an account</div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-sm-4"></div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 d-flex justify-content-center">
+                                    <img style="border-radius:20px;" src="../images/companylogos/ABA4.png" height="50" width="50"/>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4"></div>
+                            </div>
+                        </div>
                     <div class="card-body">
                         <div class="form-group">
                             <label class="form-label">Fullname</label>
@@ -26,28 +40,52 @@
                             <input type="password" @bind="User.ConfirmPassword" class="form-control"/>
                         </div>
                         <div class="form-group mt-3">
-                            <button class="btn btn-outline-primary float-end" type="submit">Register</button>
+                            @if (ShowLoadingButton)
+                            {
+                                <ButtonLoadingSpinner></ButtonLoadingSpinner>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-primary float-end" type="submit">Register</button>
+                            }
                         </div>
+                    </div>
+                    <div class="card-footer">
+                        <span>
+                            Have account already? |
+                            <a class="btn-link" href="identity/account/login">Sign In</a>
+                        </span>
+                        <ValidationSummary/>
                     </div>
                 </div>
             </EditForm>
         </div>
+        <div class="col-lg-4"></div>
     </div>
 </div>
 
 @code {
+    public bool ShowLoadingButton { get; set; } = false;
     Register User = new();
 
     async Task HandlerRegistration()
     {
+        ShowLoadingButton = true;
         var result = await accountService.CreateAsync(User);
         if (result.Flag)
         {
+            await DisplayDialog(result.Message, "Success");
             User = new();
         }
         else
         {
-            
+            await DisplayDialog(result.Message, "Alert");
         }
+        ShowLoadingButton = false;
+    }
+
+    private async Task DisplayDialog(string content, string title)
+    {
+        await DialogService.AlertAsync(content, title);
     }
 }
