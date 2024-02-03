@@ -4,7 +4,7 @@
 
 <AuthorizeView>
     <Authorized>
-        <div class="top-row ps-3 navbar-dark">
+        <div class="top-row p-3 navbar-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
                     Welcome, @context.User.Identity!.Name
@@ -18,26 +18,26 @@
         <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
             <nav class="flex-column">
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link p-2" href="/home/dashboard">
-                        <span class="bi bi-house-door-fill-nav-menu"></span> Home
+                    <NavLink class="nav-link p-2 gap-1" href="/home/dashboard">
+                        <span class="bi bi-house-door-fill fs-4 text-center" aria-hidden="true"></span> Home
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link p-2" href="counter">
-                        <span class="bi bi-plus-square-fill-nav-menu"></span> Counter
+                    <NavLink class="nav-link p-2 gap-1" href="counter">
+                        <span class="bi bi-plus-square-fill fs-4 text-center" aria-hidden="true"></span> Counter
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link p-2" @onclick="ShowAdminMenuContainer" style="cursor:pointer;" href="javascript:void()">
                         <div class="hstack gap-1">
-                            <span class="bi bi-person-fill fs-3 text-center" aria-hidden="true" style="margin-top: -2rem;"></span>
+                            <span class="bi bi-person-fill fs-3 text-center" aria-hidden="true"></span>
                             <span>Administration</span>
                         </div>
                     </NavLink>
                     <a class="nav-link p-2 text-white" style="margin-left: 5rem; visibility:@CssStyle">
-                        <div class="hstack">
-                            <span class="bi bi-people fs-5 text-center" aria-hidden="true" style="margin-top:-2rem;"></span>
+                        <div class="hstack gap-1">
+                            <span class="bi bi-people fs-5 text-center" aria-hidden="true"></span>
                             <span>Users</span>
                         </div>
                     </a>
@@ -45,7 +45,7 @@
                 <div class="nav-item px-3" style="margin-top: @DepartmentMargin">
                     <NavLink class="nav-link p-2" @onclick="ShowDepartmentContainer" style="cursor:pointer;" href="javascript:void()">
                         <div class="hstack gap-1">
-                            <span class="bi bi-backpack4-fill fs-3 text-center" aria-hidden="true" style="margin-top:-2rem"></span>
+                            <span class="bi bi-backpack4-fill fs-3 text-center" aria-hidden="true"></span>
                             <span>Department</span>
                         </div>
                     </NavLink>
@@ -53,24 +53,24 @@
                         <ul class="list-group">
                             <li style="list-style:none; cursor:pointer;">
                                 <a class="nav-link p-2" @onclick="GeneralDepartmentClicked">
-                                    <div class="hstack text-wrap">
-                                        <span class="bi bi-file-medical fs-5 text-center" aria-hidden="true" style="margin-top:-2rem"></span>
+                                    <div class="hstack text-wrap gap-1">
+                                        <span class="bi bi-file-medical fs-5 text-center" aria-hidden="true"></span>
                                         <span class="fs-6">General</span>
                                     </div>
                                 </a>
                             </li>
                             <li style="list-style:none; cursor:pointer;">
                                 <a class="nav-link p-2">
-                                    <div class="hstack">
-                                        <span class="bi bi-sub-stack fs-5 text-center" aria-hidden="true" style="margin-top:-2rem;"></span>
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-substack fs-5 text-center" aria-hidden="true"></span>
                                         <span>Department</span>
                                     </div>
                                 </a>
                             </li>
                             <li style="list-style:none; cursor:pointer;">
                                 <a class="nav-link p-2">
-                                    <div class="hstack">
-                                        <span class="bi bi-chevron-bar-contract fs-5 text-center" aria-hidden="true" style="margin-top:-2rem;"></span>
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-chevron-bar-contract fs-5 text-center" aria-hidden="true"></span>
                                         <span>Branch</span>
                                     </div>
                                 </a>
