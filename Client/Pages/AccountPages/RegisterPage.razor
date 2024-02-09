@@ -102,7 +102,7 @@
         var user = (await AuthenticationState).User;
         bool isUserAuthenticated = user.Identity!.IsAuthenticated;
 
-        if (!isUserAuthenticated)
+        if (isUserAuthenticated)
             NavManager.NavigateTo("/home/dashboard");
     }
 }
