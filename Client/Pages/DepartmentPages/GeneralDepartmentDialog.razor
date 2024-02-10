@@ -1,4 +1,5 @@
-﻿@inject IDialogService DialogService
+﻿@using BaseLibrary.Entities
+@inject IDialogService DialogService
 @implements IDialogContentComponent<GeneralDepartmentDialog>
 
 <FluentDialogHeader ShowDismiss="true">
@@ -34,7 +35,7 @@
 
 @code {
     [Parameter]
-    public GeneralDepartmentDTO Department { get; set; } = new();
+    public GeneralDepartment Department { get; set; } = new();
 
     [CascadingParameter]
     public FluentDialog Dialog { get; set; } = default!;
