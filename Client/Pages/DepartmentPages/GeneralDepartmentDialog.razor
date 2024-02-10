@@ -1,45 +1,63 @@
-﻿@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Popups
-@inject SfDialogService dialogService
+﻿@inject IDialogService DialogService
+@implements IDialogContentComponent<GeneralDepartmentDialog>
 
-<SfDialog Width="350px" IsModal="true" ShowCloseIcon="true" @bind-Visible="IsVisible">
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentLabel Typo="Typography.PaneHeader">
+            Add Department
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
 
-    <DialogEvents OnOpen="OpenDialog"></DialogEvents>
+<FluentDialogBody>
+    <EditForm Model="Department" Enhance OnSubmit="Save">
+        <div class="card border-success">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <InputText @bind-Value="Department.Name" class="form-control" />
+            </div>
+        </div>
+    </EditForm>
+ </FluentDialogBody>
 
-    <DialogTemplates>
-        <Header> Add Department</Header>
-        <Content>
-            <EditForm Model="Department" Enhance OnSubmit="Save">
-                <div class="card border-success">
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <InputText @bind-Value="Department.Name" class="form-control"/>
-                    </div>
-                </div>
-            </EditForm>
-        </Content>
-    </DialogTemplates>
-
-    <DialogButtons>
-        <DialogButton Content="SAVE" Type="ButtonType.Submit" IsPrimary="true" OnClick="Save"/>
-    </DialogButtons>
-
-</SfDialog>
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit"
+                  Disabled="@(!_editContext.Validate())"
+                  OnClick="@Save">
+        Save
+    </FluentButton>
+    <FluentButton Appearance="Appearance.Neutral"
+                  OnClick="@CancelAsync">
+        Cancel
+    </FluentButton>
+</FluentDialogFooter>
 
 @code {
     [Parameter]
     public GeneralDepartmentDTO Department { get; set; } = new();
-    private bool IsVisible { get; set; } = false;
 
-    public void OpenDialog()
-    {
-        IsVisible = true;
-        StateHasChanged();
-    }
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
 
-    async void Save()
+    [Parameter]
+    public GeneralDepartmentDialog Content { get; set; } = default!;
+
+    private EditContext _editContext = default!;
+
+    private async void Save()
     {
         if (string.IsNullOrEmpty(Department.Name))
-            await dialogService.AlertAsync("You need to private Department name.", "Alert!");
+            await DialogService.ShowErrorAsync("You need to private Department name.");
     }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(Content);
+    }
+
+    private async Task CancelAsync()
+    {
+        await Dialog.CancelAsync();
+    }
+
 }

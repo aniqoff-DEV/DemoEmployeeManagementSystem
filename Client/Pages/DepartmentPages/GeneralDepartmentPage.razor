@@ -1,5 +1,6 @@
 ﻿@using Client.ApplicationStates
 @implements IDisposable
+@inject IDialogService DialogService
 @inject DepartmentState departmentState
 
 @if (departmentState.ShowGeneralDepartment)
@@ -10,9 +11,11 @@
                 <div class="card">
                     <div class="card-header">
                         <h4 class="float-start">General Department</h4>
-                        <button class="btn btn-outline-success float-end" @onclick="OpenDialog">
-                            <i class="bi bi-plus-circle-dotted"></i> Add Department
-                        </button>
+                        <FluentButton Appearance="Appearance.Neutral" Color="Green"
+                                      OnClick="@OpenDialog" class="float-end">
+                            <i class="bi bi-plus-circle-dotted"></i> 
+                            Add Deaprtment
+                        </FluentButton>
                     </div>
                     <div class="card-header">
                         <div class="card-body">
@@ -62,9 +65,14 @@
         departmentState.GeneralDepartmentAction += StateHasChanged;
     }
 
-    void OpenDialog()
+    async void OpenDialog()
     {
-        generalDepartmentDialog?.OpenDialog();
+        await DialogService.ShowDialogAsync<GeneralDepartmentDialog>(generalDepartmentDialog, new DialogParameters()
+            {
+                Height = "400px",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true,
+            });
     }
 
     public void Dispose(){

@@ -7,8 +7,7 @@ using ClientLibrary.Services.Implementations;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Syncfusion.Blazor;
-using Syncfusion.Blazor.Popups;
+using Microsoft.Fast.Components.FluentUI;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -33,7 +32,6 @@ builder.Services.AddScoped<IUserAccountService, UserAccountServices>();
 
 builder.Services.AddScoped<DepartmentState>();
 
-builder.Services.AddSyncfusionBlazor();
-builder.Services.AddScoped<SfDialogService>();
+builder.Services.AddFluentUIComponents();
 
 await builder.Build().RunAsync();
