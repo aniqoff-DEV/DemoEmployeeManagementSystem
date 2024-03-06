@@ -1,0 +1,57 @@
+﻿@implements IDialogContentComponent<ManageUser>
+
+<FluentDialogBody>
+    <EditForm Model="Content" Enhance>
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Id</label>
+                    <input @bind="Content.Name" class="form-control" disabled />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Id</label>
+                    <input @bind="Content.Email" class="form-control" disabled />
+                </div>
+                <div class="form-group mt-3 mb-3">
+                    <label class="form-label">Select Role</label>
+                        <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                        Placeholder="@(!string.IsNullOrEmpty(Content.Role) ? Content!.Role! : "Select Role")"
+                                        Items="@SystemRoles"
+                                        TOption="SystemRole"
+                                        OptionValue="@(i => i.Id.ToString())"
+                                        OptionText="@(item => item.Name)"
+                                        @bind-SelectedOption=@role
+                                        ValueChanged="() => OnValueChange()">
+                        </FluentCombobox>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</FluentDialogBody>
+
+@code {
+    [Parameter]
+    public ManageUser Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = new();
+
+    private List<SystemRole> SystemRoles { get; set; } = new();
+
+    private SystemRole role { get; set; } = new();
+
+    public void OnValueChange()
+    {
+        Content.Role = role.Name.ToString();
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetRoles();
+    }
+
+    private async Task GetRoles()
+    {
+        SystemRoles = await accountService.GetRoles();
+    }
+}

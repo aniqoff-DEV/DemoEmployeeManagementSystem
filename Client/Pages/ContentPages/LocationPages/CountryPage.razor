@@ -1,0 +1,180 @@
+﻿@implements IDisposable
+
+@if (allState.ShowCountry)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="float-start">Country</h4>
+                        <FluentButton Appearance="Appearance.Neutral" Color="Blue"
+                                      OnClick="@OpenDialog" class="float-end">
+                            <i class="bi bi-plus-circle-dotted"></i>
+                            Add Country
+                        </FluentButton>
+                    </div>
+                    <div class="card-header" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Country</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Countries is not null)
+                                    {
+                                        int count = 1;
+                                        foreach (var item in Countries)
+                                        {
+                                            <tr>
+                                                <th scope="row">@count</th>
+                                                <td>@item.Id</td>
+                                                <td>@item.Name</td>
+                                                <td>
+                                                    <i class="bi bi-pencil text-info" id="cursorStyle"
+                                                       @onclick="() => EditClicked(item)"></i>
+                                                    <i class="bi bi-trash text-danger" id="cursorStyle"
+                                                       @onclick="() => DeletedClicked(item)"></i>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="alert alert-info text-center">
+                                                <div>No Country added yet!</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cursorStyle {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    public List<Country>? Countries { get; set; }
+
+    private CountryDialog? _countryDialog;
+    private Country _country = new();
+    private string _title = "Add";
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetCountries();
+        allState.Action += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+
+    private async Task GetCountries()
+    {
+        Countries = await countryService.GetAll(Constants.CountryBaseUrl);
+    }
+
+    private void EditClicked(Country country)
+    {
+        _title = "Update";
+        _country = country;
+        OpenDialog();
+        _title = "Add";
+    }
+
+    //Delete
+    private async void DeletedClicked(Country country)
+    {
+        bool notConfirm;
+        var dialog = await DialogService.ShowConfirmationAsync("Do you want to delete it?", "Yes", "Nope", "Delete");
+        var result = await dialog.Result;
+        notConfirm = result.Cancelled;
+        if (notConfirm) return;
+
+        var response = await countryService.DeleteById(country.Id, Constants.CountryBaseUrl);
+        await DisplayMessage(response.Flag, response.Message);
+        await GetCountries();
+    }
+
+    private async void OpenDialog()
+    {
+        DialogParameters<Country> parameters = new()
+            {
+                Title = $"{_title} Country",
+                OnDialogResult = DialogService.CreateDialogCallback(this, HandleIt),
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryAction = "No",
+                Width = "500px",
+                Height = "500px",
+                Content = _country,
+            };
+
+        await DialogService.ShowDialogAsync<CountryDialog, Country>(parameters);
+    }
+
+    // Add or Update
+    private async Task HandleIt(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            _country = new();
+            await GetCountries();
+            _title = "Add";
+            return;
+        }
+        if (result.Data is not null)
+        {
+            Country? country = result.Data as Country;
+
+            if (string.IsNullOrEmpty(country.Name))
+                await DialogService.ShowErrorAsync("You need to private Country name.");
+
+            if (country.Id != 0)
+            {
+                var request = await countryService.Update(country, Constants.CountryBaseUrl);
+                await DisplayMessage(request.Flag, request.Message);
+                return;
+            }
+            else
+            {
+                var response = await countryService.Insert(country, Constants.CountryBaseUrl);
+                await GetCountries();
+                await DisplayMessage(response.Flag, response.Message);
+                return;
+            }
+        }
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
+    }
+}

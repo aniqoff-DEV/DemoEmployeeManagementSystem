@@ -1,0 +1,183 @@
+﻿@implements IDisposable
+
+@if (allState.ShowBranch)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="float-start">Branches</h4>
+                        <FluentButton Appearance="Appearance.Neutral" Color="Blue"
+                                      OnClick="@OpenDialog" class="float-end">
+                            <i class="bi bi-plus-circle-dotted"></i>
+                            Add Branch
+                        </FluentButton>
+                    </div>
+                    <div class="card-header" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Department</th>
+                                        <th scope="col">Branch</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Branches is not null)
+                                    {
+                                        int count = 1;
+                                        foreach (var item in Branches)
+                                        {
+                                            <tr>
+                                                <th scope="row">@count</th>
+                                                <td>@item.Id</td>
+                                                <td>@item.Department!.Name</td>
+                                                <td>@item.Name</td>
+                                                <td>
+                                                    <i class="bi bi-pencil text-info" id="cursorStyle"
+                                                       @onclick="() => EditClicked(item)"></i>
+                                                    <i class="bi bi-trash text-danger" id="cursorStyle"
+                                                       @onclick="() => DeletedClicked(item)"></i>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="alert alert-info text-center">
+                                                <div>No Branch added yet!</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cursorStyle {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    public List<Branch>? Branches { get; set; } = new();
+
+    private Branch _branch = new();
+    private BranchDialog? _branchDialog;
+    private string _title = "Add";
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetBraches();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetBraches()
+    {
+        Branches = await branchService.GetAll(Constants.BranchBaseUrl);
+    }
+
+    private async void OpenDialog()
+    {
+        DialogParameters<Branch> parameters = new()
+            {
+                Title = $"{_title} Branch",
+                OnDialogResult = DialogService.CreateDialogCallback(this, HandleIt),
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryAction = "No",
+                Width = "380px",
+                Height = "500px",
+                Content = _branch,
+            };
+
+        await DialogService.ShowDialogAsync<BranchDialog, Branch>(parameters);
+    }
+
+    private async Task HandleIt(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            _branch = new();
+            await GetBraches();
+            _title = "Add";
+            return;
+        }
+        if (result.Data is not null)
+        {
+            Branch? branch = result.Data as Branch;
+
+            if (string.IsNullOrEmpty(branch.Name))
+                await DialogService.ShowErrorAsync("You need to private Branch name.");
+
+            if (branch.Id != 0)
+            {
+                var request = await branchService.Update(branch, Constants.BranchBaseUrl);
+                await DisplayMessage(request.Flag, request.Message);
+                await GetBraches();
+                return;
+            }
+            else
+            {
+                var response = await branchService.Insert(branch, Constants.BranchBaseUrl);
+                await DisplayMessage(response.Flag, response.Message);
+                await GetBraches();
+                return;
+            }
+        }
+    }
+
+    //Delete
+    private async void DeletedClicked(Branch branch)
+    {
+        bool notConfirm;
+        var dialog = await DialogService.ShowConfirmationAsync($"Are you sure you wanna delete {branch.Name}?"
+                                                                , "Yes", "Nope", "Delete");
+        var result = await dialog.Result;
+        notConfirm = result.Cancelled;
+        if (notConfirm) return;
+
+        var response = await departmentService.DeleteById(branch.Id, Constants.BranchBaseUrl);
+        await DisplayMessage(response.Flag, response.Message);
+        await GetBraches();
+    }
+
+    private void EditClicked(Branch branch)
+    {
+        _title = "Update";
+        _branch = branch;
+        OpenDialog();
+        _title = "Add";
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
+    }
+}

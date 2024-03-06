@@ -28,7 +28,10 @@ namespace ServerLibrary.Repositories.Implementations
             await appDbContext.Branches.FindAsync(id);
 
         public async Task<List<Branch>> GetAll() =>
-            await appDbContext.Branches.ToListAsync();
+            await appDbContext.Branches
+            .AsNoTracking()
+            .Include(d => d.Department)
+            .ToListAsync();
 
         public async Task<GeneralResponse> Insert(Branch item)
         {
@@ -40,10 +43,11 @@ namespace ServerLibrary.Repositories.Implementations
 
         public async Task<GeneralResponse> Update(Branch item)
         {
-            var department = await appDbContext.Branches.FindAsync(item.Id);
-            if (department is null) return NotFound();
+            var branch = await appDbContext.Branches.FindAsync(item.Id);
+            if (branch is null) return NotFound();
 
-            department.Name = item.Name;
+            branch.Name = item.Name;
+            branch.DepartmentId = item.DepartmentId;
             await Commit();
             return Success();
         }

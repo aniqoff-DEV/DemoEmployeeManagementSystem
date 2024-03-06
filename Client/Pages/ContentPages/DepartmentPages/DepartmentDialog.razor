@@ -1,0 +1,58 @@
+﻿@implements IDialogContentComponent<Department>
+
+<FluentDialogBody>
+    <EditForm Model="Content" Enhance>
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Id</label>
+                    <input @bind="Content.Id" class="form-control" disabled/>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <FluentTextField @bind-Value="Content.Name" class="form-control" />
+                </div>
+                <div class="form-group mt-3 mb-3">
+                    <label class="form-label">Select General Department</label>
+                        <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                        Placeholder="@(Content.GeneralDepartment != null ? Content.GeneralDepartment!.Name : "Select General Department")"
+                                        Items="@GeneralDepartments"
+                                        TOption="GeneralDepartment"
+                                        OptionValue="@(i => i.Id.ToString())"
+                                        OptionText="@(item => item.Name)"
+                                        @bind-SelectedOption=@generalDepartment
+                                        ValueChanged="() => OnValueChange()">
+                        </FluentCombobox>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</FluentDialogBody>
+
+
+@code {
+    [Parameter]
+    public Department Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = new();
+
+    private List<GeneralDepartment> GeneralDepartments { get; set; } = new();
+
+    private GeneralDepartment generalDepartment { get; set; } = new();
+
+    public void OnValueChange()
+    {
+        Content.GeneralDepartmentId = int.Parse(generalDepartment.Id.ToString());        
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetGeneralDepartments();
+    }
+
+    private async Task GetGeneralDepartments()
+    {
+        GeneralDepartments = await generalDepartmentService.GetAll(Constants.GeneralDepartmentBaseUrl);
+    }
+}

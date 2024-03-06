@@ -1,0 +1,183 @@
+﻿@implements IDisposable
+
+@if (allState.ShowTown)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="float-start">Cities</h4>
+                        <FluentButton Appearance="Appearance.Neutral" Color="Blue"
+                                      OnClick="@OpenDialog" class="float-end">
+                            <i class="bi bi-plus-circle-dotted"></i>
+                            Add City
+                        </FluentButton>
+                    </div>
+                    <div class="card-header" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">City</th>
+                                        <th scope="col">Town</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Towns is not null)
+                                    {
+                                        int count = 1;
+                                        foreach (var item in Towns)
+                                        {
+                                            <tr>
+                                                <th scope="row">@count</th>
+                                                <td>@item.Id</td>
+                                                <td>@item.City!.Name</td>
+                                                <td>@item.Name</td>
+                                                <td>
+                                                    <i class="bi bi-pencil text-info" id="cursorStyle"
+                                                       @onclick="() => EditClicked(item)"></i>
+                                                    <i class="bi bi-trash text-danger" id="cursorStyle"
+                                                       @onclick="() => DeletedClicked(item)"></i>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="alert alert-info text-center">
+                                                <div>No Town added yet!</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cursorStyle {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    public List<Town>? Towns { get; set; } = new();
+
+    private Town _town = new();
+    private TownDialog? _townDialog;
+    private string _title = "Add";
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetTowns();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetTowns()
+    {
+        Towns = await townService.GetAll(Constants.TownBaseUrl);
+    }
+
+    private async void OpenDialog()
+    {
+        DialogParameters<Town> parameters = new()
+            {
+                Title = $"{_title} Town",
+                OnDialogResult = DialogService.CreateDialogCallback(this, HandleIt),
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryAction = "No",
+                Width = "380px",
+                Height = "500px",
+                Content = _town,
+            };
+
+        await DialogService.ShowDialogAsync<TownDialog, Town>(parameters);
+    }
+
+    private async Task HandleIt(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            _town = new();
+            await GetTowns();
+            _title = "Add";
+            return;
+        }
+        if (result.Data is not null)
+        {
+            Town? town = result.Data as Town;
+
+            if (string.IsNullOrEmpty(town.Name))
+                await DialogService.ShowErrorAsync("You need to private Town name.");
+
+            if (town.Id != 0)
+            {
+                var request = await townService.Update(town, Constants.TownBaseUrl);
+                await DisplayMessage(request.Flag, request.Message);
+                await GetTowns();
+                return;
+            }
+            else
+            {
+                var response = await townService.Insert(town, Constants.TownBaseUrl);
+                await DisplayMessage(response.Flag, response.Message);
+                await GetTowns();
+                return;
+            }
+        }
+    }
+
+    //Delete
+    private async void DeletedClicked(Town town)
+    {
+        bool notConfirm;
+        var dialog = await DialogService.ShowConfirmationAsync($"Are you sure you wanna delete {town.Name}?"
+                                                                , "Yes", "Nope", "Delete");
+        var result = await dialog.Result;
+        notConfirm = result.Cancelled;
+        if (notConfirm) return;
+
+        var response = await townService.DeleteById(town.Id, Constants.TownBaseUrl);
+        await DisplayMessage(response.Flag, response.Message);
+        await GetTowns();
+    }
+
+    private void EditClicked(Town town)
+    {
+        _title = "Update";
+        _town = town;
+        OpenDialog();
+        _title = "Add";
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
+    }
+}

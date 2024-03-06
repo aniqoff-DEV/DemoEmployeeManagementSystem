@@ -54,7 +54,7 @@ namespace ServerLibrary.Repositories.Implementations
             return item is null;
         }
 
-        private static GeneralResponse NotFound() => new(false, "Sorry, department not found");
+        private static GeneralResponse NotFound() => new(false, "Sorry, country not found");
         private static GeneralResponse Success() => new(true, "Proccess completed");
         private async Task Commit() => await appDbContext.SaveChangesAsync();
     }

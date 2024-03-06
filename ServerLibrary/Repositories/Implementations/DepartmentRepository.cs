@@ -24,8 +24,10 @@ namespace ServerLibrary.Repositories.Implementations
             return Success();
         }
 
-        public async Task<List<Department>> GetAll() =>
-            await appDbContext.Departments.ToListAsync();
+        public async Task<List<Department>> GetAll() => await appDbContext.Departments
+            .AsNoTracking()
+            .Include(gd => gd.GeneralDepartment)
+            .ToListAsync();
 
         public async Task<Department> GetById(int id) => await appDbContext.Departments.FindAsync(id);
 
@@ -43,6 +45,7 @@ namespace ServerLibrary.Repositories.Implementations
             if (department is null) return NotFound();
 
             department.Name = item.Name;
+            department.GeneralDepartmentId = item.GeneralDepartmentId;
             await Commit();
             return Success();
         }
@@ -54,7 +57,7 @@ namespace ServerLibrary.Repositories.Implementations
             return item is null;
         }
 
-        private static GeneralResponse NotFound() => new(false, "Sorry, deaprtment not found");
+        private static GeneralResponse NotFound() => new(false, "Sorry, department not found");
         private static GeneralResponse Success() => new(true, "Proccess completed");
         private async Task Commit() => await appDbContext.SaveChangesAsync();
     }

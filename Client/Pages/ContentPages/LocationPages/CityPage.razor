@@ -1,0 +1,183 @@
+﻿@implements IDisposable
+
+@if (allState.ShowCity)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="float-start">Cities</h4>
+                        <FluentButton Appearance="Appearance.Neutral" Color="Blue"
+                                      OnClick="@OpenDialog" class="float-end">
+                            <i class="bi bi-plus-circle-dotted"></i>
+                            Add City
+                        </FluentButton>
+                    </div>
+                    <div class="card-header" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Country</th>
+                                        <th scope="col">City</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Cities is not null)
+                                    {
+                                        int count = 1;
+                                        foreach (var item in Cities)
+                                        {
+                                            <tr>
+                                                <th scope="row">@count</th>
+                                                <td>@item.Id</td>
+                                                <td>@item.Country!.Name</td>
+                                                <td>@item.Name</td>
+                                                <td>
+                                                    <i class="bi bi-pencil text-info" id="cursorStyle"
+                                                       @onclick="() => EditClicked(item)"></i>
+                                                    <i class="bi bi-trash text-danger" id="cursorStyle"
+                                                       @onclick="() => DeletedClicked(item)"></i>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="alert alert-info text-center">
+                                                <div>No City added yet!</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cursorStyle {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    public List<City>? Cities { get; set; } = new();
+
+    private City _city = new();
+    private CityDialog? _cityDialog;
+    private string _title = "Add";
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetCities();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetCities()
+    {
+        Cities = await cityService.GetAll(Constants.CityBaseUrl);
+    }
+
+    private async void OpenDialog()
+    {
+        DialogParameters<City> parameters = new()
+            {
+                Title = $"{_title} Department",
+                OnDialogResult = DialogService.CreateDialogCallback(this, HandleIt),
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryAction = "No",
+                Width = "380px",
+                Height = "500px",
+                Content = _city,
+            };
+
+        await DialogService.ShowDialogAsync<CityDialog, City>(parameters);
+    }
+
+    private async Task HandleIt(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            _city = new();
+            await GetCities();
+            _title = "Add";
+            return;
+        }
+        if (result.Data is not null)
+        {
+            City? city = result.Data as City;
+
+            if (string.IsNullOrEmpty(city.Name))
+                await DialogService.ShowErrorAsync("You need to private City name.");
+
+            if (city.Id != 0)
+            {
+                var request = await cityService.Update(city, Constants.CityBaseUrl);
+                await DisplayMessage(request.Flag, request.Message);
+                await GetCities();
+                return;
+            }
+            else
+            {
+                var response = await cityService.Insert(city, Constants.CityBaseUrl);
+                await DisplayMessage(response.Flag, response.Message);
+                await GetCities();
+                return;
+            }
+        }
+    }
+
+    //Delete
+    private async void DeletedClicked(City city)
+    {
+        bool notConfirm;
+        var dialog = await DialogService.ShowConfirmationAsync($"Are you sure you wanna delete {city.Name}?"
+                                                                , "Yes", "Nope", "Delete");
+        var result = await dialog.Result;
+        notConfirm = result.Cancelled;
+        if (notConfirm) return;
+
+        var response = await cityService.DeleteById(city.Id, Constants.CityBaseUrl);
+        await DisplayMessage(response.Flag, response.Message);
+        await GetCities();
+    }
+
+    private void EditClicked(City city)
+    {
+        _title = "Update";
+        _city = city;
+        OpenDialog();
+        _title = "Add";
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
+    }
+}

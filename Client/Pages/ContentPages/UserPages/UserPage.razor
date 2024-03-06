@@ -1,0 +1,177 @@
+﻿@implements IDisposable
+
+@if (allState.ShowUser)
+{
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="float-start">Manage Users</h4>
+                    </div>
+                    <div class="card-header" style="max-height:580px; overflow-x:hidden; overflow-y:scroll;">
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (ManageUsers is not null)
+                                    {
+                                        int count = 1;
+                                        foreach (var item in ManageUsers)
+                                        {
+                                            <tr>
+                                                <th scope="row">@count</th>
+                                                <td>@item.UserId</td>
+                                                <td>@item.Name</td>
+                                                <td>@item.Email</td>
+                                                <td>@item.Role</td>
+                                                <td>
+                                                    <i class="bi bi-pencil text-info" id="cursorStyle"
+                                                       @onclick="() => EditClicked(item)"></i>
+                                                    <i class="bi bi-trash text-danger" id="cursorStyle"
+                                                       @onclick="() => DeletedClicked(item)"></i>
+                                                </td>
+                                            </tr>
+                                            count++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="alert alert-info text-center">
+                                                <div>No User added yet!</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .cursorStyle {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    public List<SystemRole> SystemRoles { get; set; } = new();
+    public List<ManageUser> ManageUsers { get; set; } = new();
+
+    private ManageUser _manageUser = new();
+    private UserDialog? _userDialog;
+    private string _title = "Update Role";
+
+    public void Dispose()
+    {
+        allState.Action -= StateHasChanged;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetUsers();
+        await GetRoles();
+        allState.Action += StateHasChanged;
+    }
+
+    private async Task GetUsers()
+    {
+        ManageUsers = await accountService.GetUsers();
+    }
+    
+    private async Task GetRoles()
+    {
+        SystemRoles = await accountService.GetRoles();
+    }
+
+    private async void OpenDialog()
+    {
+        DialogParameters<ManageUser> parameters = new()
+            {
+                Title = $"{_title}",
+                OnDialogResult = DialogService.CreateDialogCallback(this, HandleIt),
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryAction = "No",
+                Width = "380px",
+                Height = "450px",
+                Content = _manageUser,
+            };
+
+        await DialogService.ShowDialogAsync<UserDialog, ManageUser>(parameters);
+    }
+
+    private async Task HandleIt(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            _manageUser = new();
+            await GetUsers();
+            return;
+        }
+        if (result.Data is not null)
+        {
+            ManageUser? manageUser = result.Data as ManageUser;
+
+            if (string.IsNullOrEmpty(manageUser.Name))
+                await DialogService.ShowErrorAsync("You need to private Manage User name.");
+
+            if (manageUser != null)
+            {
+                var request = await accountService.UpdateUser(manageUser);
+                await DisplayMessage(request.Flag, request.Message);
+                await GetUsers();
+                return;
+            }
+        }
+    }
+
+    //Delete
+    private async void DeletedClicked(ManageUser manageUser)
+    {
+        bool notConfirm;
+        var dialog = await DialogService.ShowConfirmationAsync($"Are you sure you wanna delete {manageUser.Name}?"
+                                                                , "Yes", "Nope", "Delete");
+        var result = await dialog.Result;
+        notConfirm = result.Cancelled;
+        if (notConfirm) return;
+
+        var response = await accountService.DeleteUser(manageUser.UserId);
+        await DisplayMessage(response.Flag, response.Message);
+        await GetUsers();
+    }
+
+    private void EditClicked(ManageUser manageUser)
+    {        
+        _manageUser = manageUser;
+        OpenDialog();
+    }
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
+    }
+}

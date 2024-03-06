@@ -1,0 +1,70 @@
+﻿@implements IDisposable
+
+@if (allState.ShowEmployee)
+{
+    if (ShowMainPage)
+    {
+        <div class="container-fluid mt-5">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <button class="btn btn-outline-success" @onclick="ShowAddOrUpdateEmployeeButtonClicked">
+                                <i class="bi bi-plus-circle-dotted"></i>Add Employee
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <FluentDataGrid Items="@Employees" ResizableColumns=true>
+
+                                <TemplateColumn Tooltip="true" TooltipText="@(c => c.Name)" Title="Employee Image"
+                                    Align="Align.Center" InitialSortDirection="SortDirection.Ascending" IsDefaultSortColumn=true>
+                                    <div class="image">
+                                        <img src="@(context.Photo)" alt="@(context.Name)" width="150" height="150" />
+                                    </div>
+                                </TemplateColumn>
+                                <PropertyColumn Property="@(c => c.CivilId)" Sortable="true" Tooltip="true" Title="Civil ID"/>
+                                <PropertyColumn Property="@(c => c.FileNumber)" Sortable="true" Align="Align.Center" Tooltip="true" Title="File Number" />
+                                <PropertyColumn Property="@(c => c.Name)" Sortable="true" Align="Align.Center" Tooltip="true" Title="Name" />
+                                <PropertyColumn Property="@(c => c.TelephoneNumber)" Sortable="true" Align="Align.Center" Tooltip="true" Title="Telephone" />
+                                <PropertyColumn Property="@(c => c.JobName)" Align="Align.Center" Tooltip="true" Title="Job Name" />
+                                <PropertyColumn Property="@(c => c.Branch!.Name)" Align="Align.Center" Tooltip="true" Title="Branch" />
+                                <PropertyColumn Property="@(c => c.Town!.Name)" Align="Align.Center" Tooltip="true" Title="Town" />
+
+                            </FluentDataGrid>
+                        </div>
+                        <div class="card-footer">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+<AddOrUpdateEmployeePage
+    ShowAddOrUpdateEmployee="ShowAddOrUpdatePage" />
+
+@code {
+    public IQueryable<Employee>? Employees { get; set; }
+
+    public bool ShowMainPage { get; set; } = true;
+    public bool ShowAddOrUpdatePage { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allState.Action += StateHasChanged;
+        await LoadEmployees();
+    }
+
+    public void Dispose() => allState.Action -= StateHasChanged;
+
+    private void ShowAddOrUpdateEmployeeButtonClicked()
+    {
+        ShowMainPage = false;
+        ShowAddOrUpdatePage = true;
+    }
+
+    private async Task LoadEmployees()
+    {
+        Employees = (await employeeService.GetAll(Constants.EmployeeBaseUrl)).AsQueryable();
+    }
+}

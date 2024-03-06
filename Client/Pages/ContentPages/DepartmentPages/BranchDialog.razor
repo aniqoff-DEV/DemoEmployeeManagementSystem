@@ -1,0 +1,57 @@
+﻿@implements IDialogContentComponent<Branch>
+
+<FluentDialogBody>
+    <EditForm Model="Content" Enhance>
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Id</label>
+                    <input @bind="Content.Id" class="form-control" disabled />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <FluentTextField @bind-Value="Content.Name" class="form-control" />
+                </div>
+                <div class="form-group mt-3 mb-3">
+                    <label class="form-label">Select Department</label>
+                        <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                        Placeholder="@(Content.Department != null ? Content.Department!.Name : "Select Department")"
+                                        Items="@Departments"
+                                        TOption="Department"
+                                        OptionValue="@(i => i.Id.ToString())"
+                                        OptionText="@(item => item.Name)"
+                                        @bind-SelectedOption=@department
+                                        ValueChanged="() => OnValueChange()">
+                        </FluentCombobox>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</FluentDialogBody>
+
+@code {
+    [Parameter]
+    public Branch Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = new();
+
+    private List<Department> Departments { get; set; } = new();
+
+    private Department department { get; set; } = new();
+
+    public void OnValueChange()
+    {
+        Content.DepartmentId = int.Parse(department.Id.ToString());
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetDepartments();
+    }
+
+    private async Task GetDepartments()
+    {
+        Departments = await departmentService.GetAll(Constants.DepartmentBaseUrl);
+    }
+}

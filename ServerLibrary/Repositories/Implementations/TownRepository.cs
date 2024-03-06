@@ -25,7 +25,10 @@ namespace ServerLibrary.Repositories.Implementations
         }
 
         public async Task<List<Town>> GetAll() =>
-            await appDbContext.Towns.ToListAsync();
+            await appDbContext.Towns
+            .AsNoTracking()
+            .Include(c => c.City)
+            .ToListAsync();
 
         public async Task<Town> GetById(int id) => await appDbContext.Towns.FindAsync(id);
 
@@ -43,6 +46,7 @@ namespace ServerLibrary.Repositories.Implementations
             if (town is null) return NotFound();
 
             town.Name = item.Name;
+            town.CityId = item.CityId;
             await Commit();
             return Success();
         }
@@ -54,7 +58,7 @@ namespace ServerLibrary.Repositories.Implementations
             return item is null;
         }
 
-        private static GeneralResponse NotFound() => new(false, "Sorry, deaprtment not found");
+        private static GeneralResponse NotFound() => new(false, "Sorry, town not found");
         private static GeneralResponse Success() => new(true, "Proccess completed");
         private async Task Commit() => await appDbContext.SaveChangesAsync();
     }

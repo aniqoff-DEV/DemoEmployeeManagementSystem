@@ -1,0 +1,58 @@
+﻿@implements IDialogContentComponent<City>
+
+<FluentDialogBody>
+    <EditForm Model="Content" Enhance>
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Id</label>
+                    <input @bind="Content.Id" class="form-control" disabled />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <FluentTextField @bind-Value="Content.Name" class="form-control" />
+                </div>
+                <div class="form-group mt-3 mb-3">
+                    <label class="form-label">Select Country</label>
+                        <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                        Placeholder="@(Content.Country != null ? Content.Country!.Name : "Select Country")"
+                                        Items="@Countries"
+                                        TOption="Country"
+                                        OptionValue="@(i => i.Id.ToString())"
+                                        OptionText="@(item => item.Name)"
+                                        @bind-SelectedOption=@country
+                                        ValueChanged="() => OnValueChange()">
+                        </FluentCombobox>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</FluentDialogBody>
+
+
+@code {
+    [Parameter]
+    public City Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = new();
+
+    private List<Country> Countries { get; set; } = new();
+
+    private Country country { get; set; } = new();
+
+    public void OnValueChange()
+    {
+        Content.CountryId = int.Parse(country.Id.ToString());
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await GetCountries();
+    }
+
+    private async Task GetCountries()
+    {
+        Countries = await countryService.GetAll(Constants.CountryBaseUrl);
+    }
+}

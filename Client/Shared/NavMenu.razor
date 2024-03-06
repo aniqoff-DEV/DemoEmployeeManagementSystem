@@ -1,7 +1,4 @@
-﻿@using Client.ApplicationStates
-@using Microsoft.AspNetCore.Components.Authorization
-@inject DepartmentState departmentState
-
+﻿
 <AuthorizeView>
     <Authorized>
         <div class="top-row p-3 navbar-dark">
@@ -22,11 +19,6 @@
                         <span class="bi bi-house-door-fill fs-4 text-center" aria-hidden="true"></span> Home
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link p-2 gap-1" href="counter">
-                        <span class="bi bi-plus-square-fill fs-4 text-center" aria-hidden="true"></span> Counter
-                    </NavLink>
-                </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link p-2" @onclick="ShowAdminMenuContainer" style="cursor:pointer;" href="javascript:void()">
@@ -35,8 +27,8 @@
                             <span>Administration</span>
                         </div>
                     </NavLink>
-                    <a class="nav-link p-2 text-white" style="margin-left: 5rem; visibility:@CssStyle">
-                        <div class="hstack gap-1">
+                    <a class="nav-link p-2 text-white" style="margin-left:5rem; cursor:pointer; visibility:@CssStyle">
+                        <div class="hstack gap-1" @onclick="UserClicked">
                             <span class="bi bi-people fs-5 text-center" aria-hidden="true"></span>
                             <span>Users</span>
                         </div>
@@ -46,21 +38,21 @@
                     <NavLink class="nav-link p-2" @onclick="ShowDepartmentContainer" style="cursor:pointer;" href="javascript:void()">
                         <div class="hstack gap-1">
                             <span class="bi bi-backpack4-fill fs-3 text-center" aria-hidden="true"></span>
-                            <span>Department</span>
+                            <span>Management</span>
                         </div>
                     </NavLink>
-                    <div class="nav-link p-2 text-white" style="margin-left:5rem; visibility:@DepartmentCssStyle">
+                    <div class="nav-link p-2 text-white" style="margin-left:3rem; visibility:@DepartmentCssStyle">
                         <ul class="list-group">
                             <li style="list-style:none; cursor:pointer;">
                                 <a class="nav-link p-2" @onclick="GeneralDepartmentClicked">
                                     <div class="hstack text-wrap gap-1">
                                         <span class="bi bi-file-medical fs-5 text-center" aria-hidden="true"></span>
-                                        <span class="fs-6">General</span>
+                                        <span class="fs-6">General Dep</span>
                                     </div>
                                 </a>
                             </li>
                             <li style="list-style:none; cursor:pointer;">
-                                <a class="nav-link p-2">
+                                <a class="nav-link p-2" @onclick="DepartmentClicked">
                                     <div class="hstack gap-1">
                                         <span class="bi bi-substack fs-5 text-center" aria-hidden="true"></span>
                                         <span>Department</span>
@@ -68,10 +60,48 @@
                                 </a>
                             </li>
                             <li style="list-style:none; cursor:pointer;">
-                                <a class="nav-link p-2">
+                                <a class="nav-link p-2" @onclick="BranchClicked">
                                     <div class="hstack gap-1">
                                         <span class="bi bi-chevron-bar-contract fs-5 text-center" aria-hidden="true"></span>
                                         <span>Branch</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li style="list-style:none;">
+                                <hr />
+                            </li>
+                            <li style="list-style:none; cursor:pointer;">
+                                <a class="nav-link p-2" @onclick="CountryClicked">
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-geo-alt fs-5 text-center" aria-hidden="true"></span>
+                                        <span>Country</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li style="list-style:none; cursor:pointer;">
+                                <a class="nav-link p-2" @onclick="CityClicked">
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-pin-map-fill fs-5 text-center" aria-hidden="true"></span>
+                                        <span>City</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li style="list-style:none; cursor:pointer;">
+                                <a class="nav-link p-2" @onclick="TownClicked">
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-geo fs-5 text-center" aria-hidden="true"></span>
+                                        <span>Town</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li style="list-style:none;">
+                                <hr />
+                            </li>
+                            <li style="list-style:none; cursor:pointer;">
+                                <a class="nav-link p-2" @onclick="EmployeeClicked">
+                                    <div class="hstack gap-1">
+                                        <span class="bi bi-person-fill fs-5 text-center" aria-hidden="true"></span>
+                                        <span>Employees</span>
                                     </div>
                                 </a>
                             </li>
@@ -114,6 +144,7 @@
 
     public bool ShowHideDepartment { get; set; } = false;
     private string DepartmentCssStyle = "hidden";
+
     private void ShowDepartmentContainer()
     {
         ShowHideDepartment = !ShowHideDepartment;
@@ -123,8 +154,19 @@
             DepartmentCssStyle = "hidden";
     }
 
-    void GeneralDepartmentClicked()
-    {
-        departmentState.GeneralDepartmentClicked();
-    }
+    private void GeneralDepartmentClicked() => allState.GeneralDepartmentClicked();
+
+    private void DepartmentClicked() => allState.DepartmentClicked();
+
+    private void BranchClicked() => allState.BranchClicked();
+
+    private void CountryClicked() => allState.CountryClicked();
+
+    private void CityClicked() => allState.CityClicked();
+
+    private void TownClicked() => allState.TownClicked();
+
+    private void EmployeeClicked() => allState.EmployeeClicked();
+
+    private void UserClicked() => allState.UserClicked();
 }

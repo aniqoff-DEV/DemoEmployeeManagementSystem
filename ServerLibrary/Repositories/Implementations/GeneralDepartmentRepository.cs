@@ -33,7 +33,7 @@ namespace ServerLibrary.Repositories.Implementations
 
         public async Task<GeneralResponse> Insert(GeneralDepartment item)
         {
-            if (!await Checkname(item.Name!)) return new GeneralResponse(false, "Department is already added");
+            if (!await Checkname(item.Name)) return new GeneralResponse(false, "General Department is already added");
             appDbContext.GeneralDepartments.Add(item);
             await Commit();
             return Success();
@@ -51,12 +51,12 @@ namespace ServerLibrary.Repositories.Implementations
 
         private async Task<bool> Checkname(string name)
         {
-            var item = await appDbContext.Departments.FirstOrDefaultAsync(x =>
+            var item = await appDbContext.GeneralDepartments.FirstOrDefaultAsync(x =>
                 x.Name!.ToLower().Equals(name.ToLower()));
             return item is null;
         }
 
-        private static GeneralResponse NotFound() => new(false, "Sorry, deaprtment not found");
+        private static GeneralResponse NotFound() => new(false, "Sorry, general department not found");
         private static GeneralResponse Success() => new(true, "Proccess completed");
         private async Task Commit() => await appDbContext.SaveChangesAsync();
     }

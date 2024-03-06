@@ -1,3 +1,4 @@
+using BaseLibrary.Entities;
 using Blazored.LocalStorage;
 using Client;
 using Client.ApplicationStates;
@@ -20,9 +21,6 @@ builder.Services.AddHttpClient("SystemApiClient", client =>
     client.BaseAddress = new Uri("https://localhost:7140");
 }).AddHttpMessageHandler<CustomHtppHandler>();
 
-//builder.Services.AddScoped(sp => 
-//    new HttpClient { BaseAddress = new Uri("https://localhost:7140") });
-
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<GetHttpClient>();
@@ -30,7 +28,23 @@ builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<IUserAccountService, UserAccountServices>();
 
-builder.Services.AddScoped<DepartmentState>();
+#region General Department / Department / Branch
+builder.Services.AddScoped<IGenericService<GeneralDepartment>, GenericServiceImplementation<GeneralDepartment>>();
+builder.Services.AddScoped<IGenericService<Department>, GenericServiceImplementation<Department>>();
+builder.Services.AddScoped<IGenericService<Branch>, GenericServiceImplementation<Branch>>();
+#endregion
+
+#region Country / City / Town
+builder.Services.AddScoped<IGenericService<Country>, GenericServiceImplementation<Country>>();
+builder.Services.AddScoped<IGenericService<City>, GenericServiceImplementation<City>>();
+builder.Services.AddScoped<IGenericService<Town>, GenericServiceImplementation<Town>>();
+#endregion
+
+#region Employee
+builder.Services.AddScoped<IGenericService<Employee>, GenericServiceImplementation<Employee>>();
+#endregion
+
+builder.Services.AddScoped<AllState>();
 
 builder.Services.AddFluentUIComponents();
 

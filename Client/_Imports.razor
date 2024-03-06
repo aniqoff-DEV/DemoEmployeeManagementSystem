@@ -1,5 +1,7 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using BaseLibrary.Entities
+@using Client.ApplicationStates
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -15,6 +17,31 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using Microsoft.Fast.Components.FluentUI;
 
+@using Client.Pages.ContentPages.DepartmentPages
+@using Client.Pages.ContentPages.LocationPages
+@using Client.Pages.ContentPages.UserPages
+@using Client.Pages.ContentPages.EmployeePages
+@using Client.Pages.ComponentsPage
+
 @inject NavigationManager NavManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
+
+@* Authentication *@
 @inject IUserAccountService accountService
+
+@* Navbar tabs comunication state handling *@
+@inject AllState allState
+
+@* General Departments / Departments / Branch *@
+@inject IGenericService<GeneralDepartment> generalDepartmentService
+@inject IGenericService<Department> departmentService
+@inject IGenericService<Branch> branchService
+
+@* Country / City / Town *@
+@inject IGenericService<Country> countryService
+@inject IGenericService<City> cityService
+@inject IGenericService<Town> townService
+
+@* Employee *@
+@inject IGenericService<Employee> employeeService

@@ -1,0 +1,21 @@
+﻿@implements IDialogContentComponent<GeneralDepartment>
+
+<FluentDialogBody>
+    <EditForm Model="Content" Enhance>
+        <div class="card border-success">
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <InputText @bind-Value="Content.Name" class="form-control" />
+            </div>
+        </div>
+    </EditForm>
+ </FluentDialogBody>
+
+
+@code {
+    [Parameter]
+    public GeneralDepartment Content { get; set; } = new();
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = default!;
+}
