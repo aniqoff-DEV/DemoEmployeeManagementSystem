@@ -7,14 +7,16 @@ There is no architecture here and I can’t vouch for the author’s professiona
 https://github.com/users/aniqoff-DEV/projects/4
 
 # Using
-## FluentUI
+* ## FluentUI
 https://www.fluentui-blazor.net/DataGrid
-## AutoMapper
-## Blazored.LocalStorage
-## IdentityModel.Tokens.Jwt
-## Microsoft.AspNetCore.Authentication.JwtBearer
-## EntityFrameworkCore
+* ## AutoMapper
+* ## Blazored.LocalStorage
+* ## IdentityModel.Tokens.Jwt
+* ## Microsoft.AspNetCore.Authentication.JwtBearer
+* ## EntityFrameworkCore
+```
 <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.15" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.15" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.15">
-## BCrypt.Net-Next
+```
+* ## BCrypt.Net-Next
