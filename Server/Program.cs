@@ -1,5 +1,6 @@
 using BaseLibrary.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServerLibrary.Data;
@@ -15,6 +16,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddResponseCompression(options =>
+{
+    // Using Response Compression on https
+    // Not safe from CRIME and BEACH attacks, better use Server based compression!
+    options.EnableForHttps = true;
+});
+
+/* 
+ * Setting the request compression speed.
+ * The stronger the compression, the longer it will take on the server, but the request itself will weigh less.
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.SmallestSize;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    // Fastest - default
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+*/
 
 builder.Services.Configure<JwtSection>(builder.Configuration.GetSection("JwtSection"));
 var jwtSection = builder.Configuration.GetSection(nameof(JwtSection)).Get<JwtSection>();
@@ -68,6 +89,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseResponseCompression();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
