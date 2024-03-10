@@ -7,10 +7,10 @@
         <div class="container">
             <div class="row mt-5">
                 <div class="col-lg-1 text-center">
-                    <i class="bi bi-x-lg fs-3 fw-bold text-danger" style="cursor: pointer;" @onclick="Closeform"></i>
+                    <i class="bi bi-x-lg fs-3 fw-bold text-danger" style="cursor: pointer;" @onclick="CloseForm"></i>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <h2>Add Employee</h2>
+                    <h2>@Title Employee</h2>
                 </div>
             </div>
 
@@ -38,7 +38,7 @@
                     <div class="container-fluid">
                         @if(FirstLayer)
                         {
-                            <EditForm Enfance Model="EmployeeGroup1" OnInvalidSubmit="Form1">
+                            <EditForm Enfance Model="EmployeeGroup1" OnValidSubmit="Form1">
                                 <DataAnnotationsValidator/>
                                 <div class="row">
                                     <div class="col-lg-2"></div>
@@ -75,10 +75,14 @@
                                                 <InputText @bind-Value="EmployeeGroup1.FileNumber" class="form-control"/>
                                                 <ValidationMessage For="() => EmployeeGroup1.FileNumber" class="text-danger"/>
                                             </div>
-                                            <div class="form-body mt-2">
-                                                <label class="form-label">Photo</label>
-                                                <InputText @bind-Value="EmployeeGroup1.Photo" class="form-control"/>
+                                            <div class="form-body mt-3">
+                                                <label class="form-label @(ImageUploadMessage == ""?"": "text-danger")">
+                                                    @(ImageUploadMessage == "" ? "Upload Image" : ImageUploadMessage)</label>
+                                                <InputFile class="form-control" OnChange="UploadImage"/>
                                                 <ValidationMessage For="() => EmployeeGroup1.Photo" class="text-danger"/>
+                                            </div>
+                                            <div class="form-body mt-2">
+                                                <img src="@EmployeeGroup1.Photo" width="100" height="100"/>
                                             </div>
                                             <div class="form-group mt-5">
                                                 <button class="btn btn-primary float-end mt-4 mb-5" type="submit">
@@ -93,7 +97,7 @@
                             </EditForm>
                         }
                         @if(SecondLayer){
-                            <EditForm Enfance Model="EmployeeGroup2" OnInvalidSubmit="Form2">
+                            <EditForm Enfance Model="EmployeeGroup2" OnValidSubmit="Form2">
                                 <DataAnnotationsValidator/>
                                 <div class="row">
                                     <div class="col-lg-2"></div>
@@ -106,41 +110,40 @@
                                                 <ValidationMessage For="() => EmployeeGroup2.JobName" class="text-danger"/>
                                             </div>
                                             <div class="form-body mt-3">
-                                                <label class="form-label"> </label>
-                                                @* <label class="form-label">@(GeneralDepartmentName == ""? "Select General Department": $"Selected General Department:{GeneralDepartmentName}")</label> *@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select General Department"
-                                                                Items="@Countries"
-                                                                TOption="Country"
+                                                <label class="form-label">Select General Department</label>
+                                                <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(GeneralDepartment.Equals("") ? "Select General Department" : GeneralDepartment)"
+                                                                Items="@GeneralDepartments"
+                                                                TOption="GeneralDepartment"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
-                                                                @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnGeneralDepartmentValueChange()">
-                                                </FluentCombobox> *@
+                                                                @bind-SelectedOption=@generalDepartment
+                                                                ValueChanged="() => OnGeneralDepartmentValueChange(generalDepartment.Id)">
+                                                </FluentCombobox>
                                             </div>
                                             <div class="form-body mt-3">
-                                                @* <label class="form-label">@(DepartmentName == ""? "Select Department": $"Selected Department:{DepartmentName}")</label>*@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select Department"
-                                                                Items="@Countries"
-                                                                TOption="Country"
+                                                <label class="form-label">Select Department</label>
+                                                <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(Department.Equals("") ? "Select Department" : Department)"
+                                                                Items="@Departments"
+                                                                TOption="Department"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
-                                                                @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnDepartmentValueChange()">
-                                                </FluentCombobox> *@
+                                                                @bind-SelectedOption=@department
+                                                                ValueChanged="() => OnDepartmentValueChange(department.Id)">
+                                                </FluentCombobox>
                                             </div>
                                             <div class="form-body mt-3">
-                                                @* <label class="form-label">@(Employee.Branch == null? "Select Branch": $"Selected Branch:{Employee.Branch.Name}")</label> *@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select Branch"
-                                                                Items="@Countries"
-                                                                TOption="Country"
+                                                <label class="form-label">Select Branch</label>
+                                                <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(Branch.Equals("") ? "Select Country" : Branch)"
+                                                                Items="@Branches"
+                                                                TOption="Branch"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
-                                                                @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnBranchValueChange()">
-                                                </FluentCombobox> *@
+                                                                @bind-SelectedOption=@branch
+                                                                ValueChanged="() => OnBranchValueChange(branch.Id)">
+                                                </FluentCombobox>
                                                 <ValidationMessage For="() => EmployeeGroup2.BranchId" class="text-danger"/>
                                             </div>
                                             <div class="form-group mt-4 mb-5">
@@ -155,40 +158,40 @@
                                         <div class="card-title mb-5 fw-bold" style="font-family: Tahoma">Location Information</div>
                                         <div class="card-body">
                                             <div class="form-body">
-                                                @* <label class="form-label">@(CountryName == ""? "Select Country": $"Selected Country:{CountryName}")</label> *@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select Branch"
+                                                <label class="form-label">Select Branch</label>
+                                                 <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(Country.Equals("") ? "Select Country" : Country)"
                                                                 Items="@Countries"
                                                                 TOption="Country"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
                                                                 @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnCountryValueChange()">
-                                                </FluentCombobox> *@
+                                                                ValueChanged="() => OnCountryValueChange(country.Id)">
+                                                </FluentCombobox>
                                             </div>
                                             <div class="form-body mt-3">
-                                                @* <label class="form-label">@(CityName == ""? "Select City": $"Selected City:{CityName}")</label> *@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select Branch"
-                                                                Items="@Countries"
-                                                                TOption="Country"
+                                                <label class="form-label">Select City</label>
+                                                    <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(City.Equals("") ? "Select City" : City)"
+                                                                Items="@Cities"
+                                                                TOption="City"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
-                                                                @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnCityValueChange()">
-                                                </FluentCombobox> *@
+                                                                @bind-SelectedOption=@city
+                                                                ValueChanged="() => OnCityValueChange(city.Id)">
+                                                </FluentCombobox>
                                             </div>
                                             <div class="form-body mt-3">
-                                                @* <label class="form-label">@(Employee.Town == null? "Select Town": $"Selected Town:{Employee.Town.Name}")</label> *@
-                                                @* <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="Select Branch"
-                                                                Items="@Countries"
-                                                                TOption="Country"
+                                                <label class="form-label">Select Town</label>
+                                                    <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
+                                                                Placeholder="@(Town.Equals("") ? "Select Town" : Town)"
+                                                                Items="@Towns"
+                                                                TOption="Town"
                                                                 OptionValue="@(i => i.Id.ToString())"
                                                                 OptionText="@(item => item.Name)"
-                                                                @bind-SelectedOption=@country
-                                                                ValueChanged="() => OnTownValueChange()">
-                                                </FluentCombobox> *@
+                                                                @bind-SelectedOption=@town
+                                                                ValueChanged="() => OnTownValueChange(town.Id)">
+                                                </FluentCombobox>
                                                 <ValidationMessage For="() => EmployeeGroup2.TownId" class="text-danger"/>
                                             </div>
                                             <div class="form-group mt-3">
@@ -262,6 +265,8 @@
     [Parameter] public EventCallback<int> HandleGeneralDepartmentSelectedEvent { get; set; }
     [Parameter] public EventCallback<int> HandleDepartmentSelectedEvent { get; set; }
 
+    [Parameter] public EventCallback<Employee> HandleSaveEmployeeClickedEvent { get; set; }
+
     [Parameter] public EmployeeGrouping1 EmployeeGroup1 { get; set; } = new();
     [Parameter] public EmployeeGrouping2 EmployeeGroup2 { get; set; } = new();
 
@@ -273,8 +278,26 @@
     [Parameter] public List<Department> Departments { get; set; } = new();
     [Parameter] public List<Branch> Branches { get; set; } = new();
 
-    public bool FirstLayer {get; set;} = true;
-    public bool SecondLayer {get; set;} = false;
+    private GeneralDepartment generalDepartment { get; set; } = new();
+    private Department department { get; set; } = new();
+    private Branch branch { get; set; } = new();
+
+    private Country country { get; set; } = new();
+    private City city { get; set; } = new();
+    private Town town { get; set; } = new();
+
+    public bool FirstLayer {get; set; } = true;
+    public bool SecondLayer {get; set; } = false;
+
+    public string Title { get; set; } = "Add";
+    public string GeneralDepartment { get; set; } = "";
+    public string Department { get; set; } = "";
+    public string Branch { get; set; } = "";
+    public string Country { get; set; } = "";
+    public string City { get; set; } = "";
+    public string Town { get; set; } = "";
+
+    private string ImageUploadMessage = "";
 
     private string FloatingNumber1 = "floatingNumber";
     private string Floatingdiv1 = "floatingDiv";
@@ -287,31 +310,98 @@
         allState.Action += StateHasChanged;
     }
 
-    public void OnCountryValueChange() => HandleCountrySelectedEvent.InvokeAsync();
+    public void OnCountryValueChange(int id) => HandleCountrySelectedEvent.InvokeAsync(id);
 
-    public void OnCityValueChange() => HandleCitySelectedEvent.InvokeAsync();
+    public void OnCityValueChange(int id) => HandleCitySelectedEvent.InvokeAsync(id);
 
-    public void OnTownValueChange() => EmployeeGroup2.TownId = 1;//
+    public void OnTownValueChange(int id) => EmployeeGroup2.TownId = id;//
 
-    public void OnGeneralDepartmentValueChange() => HandleGeneralDepartmentSelectedEvent.InvokeAsync();
+    public void OnGeneralDepartmentValueChange(int id) => HandleGeneralDepartmentSelectedEvent.InvokeAsync(id);
 
-    public void OnDepartmentValueChange() => HandleDepartmentSelectedEvent.InvokeAsync();
+    public void OnDepartmentValueChange(int id) => HandleDepartmentSelectedEvent.InvokeAsync(id);
 
-    public void OnBranchValueChange() => EmployeeGroup2.BranchId = 1;//
+    public void OnBranchValueChange(int id) => EmployeeGroup2.BranchId = id;
 
-    public void Dispose() => allState.Action -= StateHasChanged;
+    public void Dispose()
+    {
+        Employee = new();
+        EmployeeGroup1 = new();
+        EmployeeGroup2 = new();
+        // StateHasChanged();
+        allState.Action -= StateHasChanged;
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        if (e.File.Name.ToLower().Contains(".png"))
+        {
+            var format = "image/png";
+            var resizeImage = await e.File.RequestImageFileAsync(format, 300, 300);
+            var buffer = new byte[resizeImage.Size];
+            await resizeImage.OpenReadStream().ReadAsync(buffer);
+            var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+            ImageUploadMessage = "";
+            EmployeeGroup1.Photo = imageData;
+            imageData = "";
+            return;
+        }
+        ImageUploadMessage = "PNG file needed.";
+        return;
+    }
 
     private void Form1()
     {
-        
+        bool isValid = ValidateEmployeeGroup1();
+
+        if (isValid)
+        {
+            Employee.Name = EmployeeGroup1.Name;
+            Employee.TelephoneNumber = EmployeeGroup1.TelephoneNumber;
+            Employee.Address = EmployeeGroup1.Address;
+            Employee.CivilId = EmployeeGroup1.CivilId;
+            Employee.FileNumber = EmployeeGroup1.FileNumber;
+            Employee.Photo = EmployeeGroup1.Photo;
+
+            ShowLayer2();
+        }
     }
 
-    private void Form2()
+    private async void Form2()
     {
+        bool isValid = ValidateEmployeeGroup2();
 
+        if (isValid)
+        {
+            Employee.JobName = EmployeeGroup2.JobName;
+            Employee.TownId = EmployeeGroup2.TownId;
+            Employee.BranchId = EmployeeGroup2.BranchId;
+            Employee.Other = EmployeeGroup2.Other;
+
+            await HandleSaveEmployeeClickedEvent.InvokeAsync(Employee);
+            EmployeeGroup1 = new();
+            EmployeeGroup2 = new();
+            Employee = new();
+        }
     }
 
-    private async Task Closeform()
+    private bool ValidateEmployeeGroup1()
+    {      
+        return !(string.IsNullOrEmpty(EmployeeGroup1.Name)
+        || string.IsNullOrEmpty(EmployeeGroup1.TelephoneNumber)
+        || string.IsNullOrEmpty(EmployeeGroup1.FileNumber)
+        || string.IsNullOrEmpty(EmployeeGroup1.Address)
+        || string.IsNullOrEmpty(EmployeeGroup1.Photo)
+        || string.IsNullOrEmpty(EmployeeGroup1.CivilId));
+    }
+
+    private bool ValidateEmployeeGroup2()
+    {
+        return !(string.IsNullOrEmpty(EmployeeGroup2.JobName)
+        || EmployeeGroup2.TownId == 0
+        || EmployeeGroup2.BranchId == 0);
+    }
+
+    private async Task CloseForm()
     {
         ShowAddOrUpdateEmployee = false;
         await NotifyParentFormColseClicked.InvokeAsync();

@@ -40,11 +40,38 @@
         </div>
     }
 }
-<AddOrUpdateEmployeePage
+<AddOrUpdateEmployeePage @ref="addOrUpdateEmployee"
+    Branches = "SelectedBranches"
+    Cities="SelectedCities"
+    Countries="DefaultCountries"
+    Departments="DefaultDepartments"
+    Employee="Employee"
+    GeneralDepartments="DefaultGeneralDepartments"
+    HandleCitySelectedEvent="HandleCitySelectedEvent"
+    HandleCountrySelectedEvent="HandleCountrySelectedEvent"
+    HandleDepartmentSelectedEvent="HandleDepartmentSelectedEvent"
+    HandleGeneralDepartmentSelectedEvent="HandleGeneralDepartmentSelectedEvent"
+    HandleSaveEmployeeClickedEvent="HandleSaveEmployeeClickedEvent"
+    NotifyParentFormColseClicked="NotifyParentFormCloseClicked"
     ShowAddOrUpdateEmployee="ShowAddOrUpdatePage" />
 
 @code {
+    AddOrUpdateEmployeePage? addOrUpdateEmployee;
     public IQueryable<Employee>? Employees { get; set; }
+    public Employee Employee { get; set; } = new();
+
+    public List<Country> DefaultCountries { get; set; } = new();
+    public List<City> DefaultCities { get; set; } = new();
+    public List<Town> DefaultTowns { get; set; } = new();
+
+    public List<GeneralDepartment> DefaultGeneralDepartments { get; set; } = new();
+    public List<Department> DefaultDepartments { get; set; } = new();
+    public List<Branch> DefaultBranches { get; set; } = new();
+
+    public List<Department> SelectedDepartments { get; set; } = new();
+    public List<Branch> SelectedBranches { get; set; } = new();
+    public List<City> SelectedCities { get; set; } = new();
+    public List<Town> SelectedTowns { get; set; } = new();
 
     public bool ShowMainPage { get; set; } = true;
     public bool ShowAddOrUpdatePage { get; set; } = false;
@@ -52,6 +79,60 @@
     protected override async Task OnInitializedAsync()
     {
         allState.Action += StateHasChanged;
+        await LoadEmployees();
+        await LoadDefaults();
+    }
+
+    #region Select
+    private void HandleCountrySelectedEvent(int id) => SelectedCities = DefaultCities
+        .Where(c => c.CountryId == id)
+        .ToList();
+
+    private void HandleCitySelectedEvent(int id) => SelectedTowns = DefaultTowns
+        .Where(t => t.CityId == id)
+        .ToList();
+
+    private void HandleDepartmentSelectedEvent(int id) => SelectedBranches = DefaultBranches
+        .Where(b => b.DepartmentId == id)
+        .ToList();
+
+    private void HandleGeneralDepartmentSelectedEvent(int id) => SelectedDepartments = DefaultDepartments
+        .Where(d => d.GeneralDepartmentId == id)
+        .ToList();
+    #endregion
+
+    private async Task HandleSaveEmployeeClickedEvent(Employee employee)
+    {
+        bool successCheck = false;
+        if(employee.Id > 0)
+        {
+            var result = await employeeService.Update(employee, Constants.EmployeeBaseUrl);
+            successCheck = await DisplayMessage(result.Flag, result.Message);
+        }
+        else
+        {
+            var response = await employeeService.Insert(employee, Constants.EmployeeBaseUrl);
+            successCheck = await DisplayMessage(response.Flag, response.Message);
+        }
+
+        if (successCheck)
+            addOrUpdateEmployee!.Dispose();
+    }
+
+    private async Task LoadDefaults()
+    {
+        DefaultCountries = await countryService.GetAll(Constants.CountryBaseUrl);
+        DefaultCities = await cityService.GetAll(Constants.CityBaseUrl);
+        DefaultTowns = await townService.GetAll(Constants.TownBaseUrl);
+        DefaultGeneralDepartments = await generalDepartmentService.GetAll(Constants.GeneralDepartmentBaseUrl);
+        DefaultDepartments = await departmentService.GetAll(Constants.DepartmentBaseUrl);
+        DefaultBranches = await branchService.GetAll(Constants.BranchBaseUrl);
+    }
+
+    private async Task NotifyParentFormCloseClicked()
+    {
+        ShowMainPage = true;
+        ShowAddOrUpdatePage = false;
         await LoadEmployees();
     }
 
@@ -63,8 +144,20 @@
         ShowAddOrUpdatePage = true;
     }
 
-    private async Task LoadEmployees()
-    {
+    private async Task LoadEmployees() => 
         Employees = (await employeeService.GetAll(Constants.EmployeeBaseUrl)).AsQueryable();
+
+    private async Task<bool> DisplayMessage(bool flag, string message)
+    {
+        if (flag)
+        {
+            await DialogService.ShowSuccessAsync(message);
+            return true;
+        }
+        else
+        {
+            await DialogService.ShowWarningAsync(message);
+            return false;
+        }
     }
 }
