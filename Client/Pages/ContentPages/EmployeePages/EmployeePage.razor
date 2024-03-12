@@ -42,7 +42,8 @@
 }
 <AddOrUpdateEmployeePage @ref="addOrUpdateEmployee"
     Branches = "SelectedBranches"
-    Cities="SelectedCities"
+    Towns="SelectedTowns"
+    Cities="DefaultCities"
     Countries="DefaultCountries"
     Departments="DefaultDepartments"
     Employee="Employee"
@@ -116,7 +117,7 @@
         }
 
         if (successCheck)
-            addOrUpdateEmployee!.Dispose();
+            addOrUpdateEmployee!.ClearData();
     }
 
     private async Task LoadDefaults()

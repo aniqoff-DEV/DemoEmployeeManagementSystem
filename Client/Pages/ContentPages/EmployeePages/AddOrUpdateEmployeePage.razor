@@ -136,7 +136,7 @@
                                             <div class="form-body mt-3">
                                                 <label class="form-label">Select Branch</label>
                                                 <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
-                                                                Placeholder="@(Branch.Equals("") ? "Select Country" : Branch)"
+                                                                Placeholder="@(Branch.Equals("") ? "Select Branch" : Branch)"
                                                                 Items="@Branches"
                                                                 TOption="Branch"
                                                                 OptionValue="@(i => i.Id.ToString())"
@@ -158,7 +158,7 @@
                                         <div class="card-title mb-5 fw-bold" style="font-family: Tahoma">Location Information</div>
                                         <div class="card-body">
                                             <div class="form-body">
-                                                <label class="form-label">Select Branch</label>
+                                                <label class="form-label">Select Country</label>
                                                  <FluentCombobox Autocomplete="ComboboxAutocomplete.List"
                                                                 Placeholder="@(Country.Equals("") ? "Select Country" : Country)"
                                                                 Items="@Countries"
@@ -314,7 +314,7 @@
 
     public void OnCityValueChange(int id) => HandleCitySelectedEvent.InvokeAsync(id);
 
-    public void OnTownValueChange(int id) => EmployeeGroup2.TownId = id;//
+    public void OnTownValueChange(int id) => EmployeeGroup2.TownId = id;
 
     public void OnGeneralDepartmentValueChange(int id) => HandleGeneralDepartmentSelectedEvent.InvokeAsync(id);
 
@@ -322,13 +322,14 @@
 
     public void OnBranchValueChange(int id) => EmployeeGroup2.BranchId = id;
 
-    public void Dispose()
+    public void Dispose() => allState.Action -= StateHasChanged;
+
+    public void ClearData()
     {
         Employee = new();
         EmployeeGroup1 = new();
         EmployeeGroup2 = new();
-        // StateHasChanged();
-        allState.Action -= StateHasChanged;
+        StateHasChanged();
     }
 
     private async Task UploadImage(InputFileChangeEventArgs e)
